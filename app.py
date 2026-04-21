@@ -13,67 +13,75 @@ load_dotenv()
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="The AI Talent Agency",
-    page_icon="🌌",
+    page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS FOR GALAXY AESTHETIC ---
+# --- CUSTOM CSS FOR EYE-FRIENDLY LIGHT THEME ---
 st.markdown("""
     <style>
-    /* Main background */
+    /* Main background - Soft light grey for reduced eye strain */
     .stApp {
-        background: radial-gradient(circle at top right, #0a0e29, #02040f);
-        color: #e0e0e0;
+        background-color: #f8f9fa;
+        color: #212529;
     }
 
-    /* Sidebar styling */
+    /* Sidebar styling - Slightly darker neutral for clear separation */
     section[data-testid="stSidebar"] {
-        background-color: rgba(10, 14, 41, 0.9) !important;
-        border-right: 1px solid #1f2a4d;
+        background-color: #e9ecef !important;
+        border-right: 1px solid #dee2e6;
     }
 
-    /* Headers */
+    /* Headers - High contrast professional teal/blue */
     h1, h2, h3 {
-        color: #00d4ff !important;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        color: #005f73 !important;
+        font-weight: 700 !important;
     }
 
-    /* Buttons */
+    /* Buttons - Accessible blue with white text */
     .stButton>button {
-        background: linear-gradient(90deg, #00d4ff, #005f73);
+        background: #0a9396;
         color: white;
         border: none;
-        border-radius: 5px;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
+        border-radius: 6px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: background 0.2s ease;
     }
     .stButton>button:hover {
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
-        transform: scale(1.02);
+        background: #005f73;
+        color: white;
     }
 
-    /* Input fields */
+    /* Input fields - High legibility white background with dark text */
     .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>select, .stNumberInput>div>div>input {
-        background-color: #0f172a !important;
-        color: #00d4ff !important;
-        border: 1px solid #1f2a4d !important;
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da !important;
     }
 
-    /* Status containers */
+    /* Status containers - Subtle borders and soft backgrounds */
     .status-box {
         padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #1f2a4d;
-        background-color: rgba(31, 42, 77, 0.3);
-        margin-bottom: 10px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 12px;
+        color: #495057;
     }
 
     /* Audit Log Table */
     .stDataFrame {
-        border: 1px solid #1f2a4d;
-        border-radius: 10px;
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    /* Success/Info messages contrast tweaks */
+    .stAlert {
+        border-radius: 8px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -186,7 +194,7 @@ def sign_and_send_usdc(w3, signing_key, to_address, amount):
 def main():
     registry = WorkerAgentRegistry()
 
-    st.title("🌌 The AI Talent Agency")
+    st.title("🤖 The AI Talent Agency")
     st.markdown("### Autonomous Agent Orchestration & Payments on Kite AI")
     st.markdown("---")
 
