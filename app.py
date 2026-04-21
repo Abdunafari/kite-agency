@@ -306,7 +306,7 @@ def main():
     with col_ledger:
         st.header("📊 Audit Ledger")
         st.write("Real-time attestation stream")
-        
+
         if st.session_state.audit_log:
             df = pd.DataFrame(st.session_state.audit_log)
             # Display important columns
@@ -328,6 +328,50 @@ def main():
             st.info("No transactions logged yet.")
 
     st.markdown("---")
+
+    # --- EDUCATIONAL SECTION: HOW IT WORKS ---
+    st.header("🧠 How the Agency Works")
+
+    col_info1, col_info2, col_info3 = st.columns(3)
+
+    with col_info1:
+        st.subheader("1. Discovery & Identity")
+        st.write("""
+        The Agency queries the **Kite Agent Registry** to find workers specializing in your task.
+        It verifies each worker's **Kite Passport (DID)** to ensure they are authenticated
+        and have a reputation score > 90.
+        """)
+
+    with col_info2:
+        st.subheader("2. Governance & Security")
+        st.write("""
+        Before any funds move, the **Kite Policy Engine** checks if the request violates
+        on-chain spending rules (e.g., $1,000 limit). The Agency then generates an
+        **Ephemeral Session Key** to sign the transaction safely.
+        """)
+
+    with col_info3:
+        st.subheader("3. Settlement & Proof")
+        st.write("""
+        Funds are locked in an **Escrow Contract**. Once the task is completed,
+        payment is released and an **On-Chain Attestation** is generated as a
+        verifiable proof of work and payment.
+        """)
+
+    st.markdown("---")
+
+    # --- USER GUIDE ---
+    with st.expander("📖 User Guide: How to use this Dashboard"):
+        st.markdown("""
+        ### Quick Start Guide
+        1. **Configure Connection**: Look at the sidebar. Ensure you are connected to the Kite Testnet RPC.
+        2. **Provide Credentials**: Enter your Agency Private Key in the sidebar (used to authorize the Session Key).
+        3. **Define Task**: Select a category (e.g., *Smart Contract Audit*), describe your requirements, and set a budget in USDC.
+        4. **Execute**: Click **'Execute Transaction'**. Watch the real-time status boxes as the Agency negotiates and settles the task.
+        5. **Verify**: Check the **Audit Ledger** on the right for your unique Attestation ID and transaction hash.
+        """)
+
+    st.markdown("<br>", unsafe_allow_html=True)
     st.caption("The AI Talent Agency | Powered by Kite AI Blockchain | Specialized Autonomous Workers")
 
 if __name__ == "__main__":
