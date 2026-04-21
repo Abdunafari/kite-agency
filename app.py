@@ -82,22 +82,45 @@ st.markdown("""
 class WorkerAgentRegistry:
     def __init__(self):
         self.workers = [
-            {"name": "AuditBot-9000", "category": "Smart Contract Audit", "address": "0x1111111111111111111111111111111111111111", "score": 98, "specialty": "Solidity, Vyper"},
-            {"name": "SecureScan AI", "category": "Smart Contract Audit", "address": "0x2222222222222222222222222222222222222222", "score": 92, "specialty": "Formal Verification"},
-            {"name": "CryptoArtist", "category": "NFT Art Generation", "address": "0x3333333333333333333333333333333333333333", "score": 95, "specialty": "Generative Art, Midjourney Style"},
-            {"name": "PixelGenie", "category": "NFT Art Generation", "address": "0x4444444444444444444444444444444444444444", "score": 88, "specialty": "Pixel Art"},
-            {"name": "PolyglotAgent", "category": "Translation (EN -> AR)", "address": "0x5555555555555555555555555555555555555555", "score": 94, "specialty": "Technical Localization"},
-            {"name": "MarketWhiz", "category": "Market Sentiment Analysis", "address": "0x6666666666666666666666666666666666666666", "score": 91, "specialty": "Social Media Trends"},
+            {"name": "AuditBot-9000", "category": "Smart Contract Audit", "address": "0x1111111111111111111111111111111111111111", "score": 98, "specialty": "Solidity, Vyper", "did": "did:kite:agent-001"},
+            {"name": "SecureScan AI", "category": "Smart Contract Audit", "address": "0x2222222222222222222222222222222222222222", "score": 92, "specialty": "Formal Verification", "did": "did:kite:agent-002"},
+            {"name": "CryptoArtist", "category": "NFT Art Generation", "address": "0x3333333333333333333333333333333333333333", "score": 95, "specialty": "Generative Art, Midjourney Style", "did": "did:kite:agent-003"},
+            {"name": "PixelGenie", "category": "NFT Art Generation", "address": "0x4444444444444444444444444444444444444444", "score": 88, "specialty": "Pixel Art", "did": "did:kite:agent-004"},
+            {"name": "PolyglotAgent", "category": "Translation (EN -> AR)", "address": "0x5555555555555555555555555555555555555555", "score": 94, "specialty": "Technical Localization", "did": "did:kite:agent-005"},
+            {"name": "MarketWhiz", "category": "Market Sentiment Analysis", "address": "0x6666666666666666666666666666666666666666", "score": 91, "specialty": "Social Media Trends", "did": "did:kite:agent-006"},
         ]
 
     def find_workers(self, category, min_score=90):
         return [w for w in self.workers if w["category"] == category and w["score"] >= min_score]
+
+    def get_did(self, address):
+        for w in self.workers:
+            if w["address"] == address:
+                return w.get("did")
+        return None
 
 # --- SESSION STATE ---
 if 'audit_log' not in st.session_state:
     st.session_state.audit_log = []
 
 # --- CORE LOGIC FUNCTIONS ---
+
+class PolicyEngine:
+    """Simulates Kite AI On-Chain Spending Rules & Policies."""
+    def __init__(self, budget_limit=1000):
+        self.budget_limit = budget_limit
+
+    def validate_transaction(self, amount, category):
+        # Rule 1: Budget Cap
+        if amount > self.budget_limit:
+            return False, f"Spending Rule Violation: Amount {amount} exceeds limit {self.budget_limit}"
+
+        # Rule 2: Category Restriction (Simulated)
+        restricted_categories = ["High-Frequency Trading"]
+        if category in restricted_categories:
+            return False, f"Policy Violation: {category} is a restricted category."
+
+        return True, "All on-chain policies passed."
 
 def connect_to_kite(rpc_url):
     try:
@@ -119,16 +142,36 @@ def generate_attestation(tx_hash, worker_address, amount, task):
         "Status": "Verified"
     }
 
-def sign_and_send_usdc(w3, private_key, to_address, amount):
+def create_session_key(w3, master_private_key, budget_limit):
+    """
+    Simulates the creation of a Kite AI Session Key.
+    A temporary key is generated and authorized by the master key.
+    """
+    session_account = w3.eth.account.create()
+    session_id = "SESSION-" + str(uuid.uuid4())[:8].upper()
+
+    # In a real Kite AI implementation, we would register this session key
+    # on-chain with specific spending limits and TTL.
+    return {
+        "id": session_id,
+        "address": session_account.address,
+        "private_key": session_account._private_key.hex(),
+        "limit": budget_limit,
+        "expires": time.time() + 3600 # 1 hour TTL
+    }
+
+def verify_did(registry, worker_address):
+    """Simulates Kite Passport (DID) verification."""
+    did = registry.get_did(worker_address)
+    if did and did.startswith("did:kite:"):
+        return True, did
+    return False, None
+
+def sign_and_send_usdc(w3, signing_key, to_address, amount):
     # This is a simulation of a USDC transaction on Kite AI
     # In a real app, you'd use a contract ABI and call the `transfer` method
-    # For demo purposes, we simulate the signed transaction flow
     try:
-        if private_key.startswith("0x"):
-            account = w3.eth.account.from_key(private_key)
-        else:
-            account = w3.eth.account.from_key("0x" + private_key)
-
+        account = w3.eth.account.from_key(signing_key)
         # Simulate wait time for blockchain propagation
         time.sleep(2)
         mock_tx_hash = "0x" + os.urandom(32).hex()
@@ -177,8 +220,12 @@ def main():
                 st.error("Missing Private Key! Cannot sign transaction.")
                 return
 
-            if budget >= 1000:
-                st.error("🚨 Programmable Constraint Violation: Budget exceeds Agency limit ($1,000). Transaction reverted.")
+            # --- KITE AI GOVERNANCE: ON-CHAIN POLICY ENGINE ---
+            policy_engine = PolicyEngine(budget_limit=1000)
+            is_valid, policy_msg = policy_engine.validate_transaction(budget, category)
+
+            if not is_valid:
+                st.error(f"🚨 {policy_msg}. Transaction reverted by Kite Governance.")
                 return
 
             # --- STEP 1: REQUEST ---
@@ -188,8 +235,8 @@ def main():
                 st.markdown('<div class="status-box"><b>Step 1: Request</b><br>Initializing task request...</div>', unsafe_allow_html=True)
                 time.sleep(1)
 
-                # --- STEP 2: DISCOVERY ---
-                st.markdown('<div class="status-box"><b>Step 2: Discovery</b><br>Querying Kite Network for high-reputation workers...</div>', unsafe_allow_html=True)
+                # --- STEP 2: DISCOVERY & DID VERIFICATION ---
+                st.markdown('<div class="status-box"><b>Step 2: Discovery & DID Verification</b><br>Verifying Agent Credentials via Kite Passport (DID)...</div>', unsafe_allow_html=True)
                 workers = registry.find_workers(category, min_score=90)
                 time.sleep(1.5)
 
@@ -198,22 +245,37 @@ def main():
                     return
 
                 selected_worker = workers[0] # Select highest score
-                st.info(f"📍 Agent Found: **{selected_worker['name']}** (Score: {selected_worker['score']})")
 
-                # --- STEP 3: GOVERNANCE & NEGOTIATION ---
-                st.markdown('<div class="status-box"><b>Step 3: Governance & Negotiation</b><br>Applying programmable constraints and calculating fee split...</div>', unsafe_allow_html=True)
+                is_verified, did_id = verify_did(registry, selected_worker['address'])
+                if is_verified:
+                    st.info(f"🛡️ **DID Verified**: {selected_worker['name']} is a trusted Kite Agent ({did_id}).")
+                else:
+                    st.error("DID Verification Failed! Security Protocol triggered.")
+                    return
+
+                # --- STEP 3: GOVERNANCE & SESSION KEYS ---
+                st.markdown('<div class="status-box"><b>Step 3: Governance & Session Keys</b><br>Generating ephemeral session key for secure settlement...</div>', unsafe_allow_html=True)
                 agency_fee = budget * 0.20
                 worker_payment = budget * 0.80
-                time.sleep(1)
-                st.write(f"💵 **Fee Split:** Agency (20%): ${agency_fee:.2f} | Worker (80%): ${worker_payment:.2f}")
 
-                # --- STEP 4: SETTLEMENT ---
-                st.markdown('<div class="status-box"><b>Step 4: Settlement</b><br>Signing and broadcasting USDC transaction on Kite AI...</div>', unsafe_allow_html=True)
-                success, result = sign_and_send_usdc(w3, private_key, selected_worker['address'], worker_payment)
-                
+                # Create session key for this specific task
+                session = create_session_key(w3, private_key, worker_payment)
+                st.write(f"🔑 **Session Key Active**: `{session['address'][:10]}...` (Limit: {session['limit']} USDC)")
+                st.write(f"💵 **Fee Split:** Agency (20%): ${agency_fee:.2f} | Worker (80%): ${worker_payment:.2f}")
+                time.sleep(1)
+
+                # --- STEP 4: ESCROW & SETTLEMENT ---
+                st.markdown('<div class="status-box"><b>Step 4: Escrow & Settlement</b><br>Securing funds in Escrow and broadcasting transaction via Session Key...</div>', unsafe_allow_html=True)
+
+                # Simulate Escrow Lock
+                st.write("🔒 *Funds locked in Escrow contract...*")
+                time.sleep(1)
+
+                success, result = sign_and_send_usdc(w3, session['private_key'], selected_worker['address'], worker_payment)
+
                 if success:
                     tx_hash = result
-                    st.success(f"💸 Payment successful! TX Hash: {tx_hash[:20]}...")
+                    st.success(f"💸 Payment released from Escrow! TX Hash: {tx_hash[:20]}...")
 
                     # --- STEP 5: ATTESTATION ---
                     st.markdown('<div class="status-box"><b>Step 5: Attestation</b><br>Generating Proof of Work & On-chain receipt...</div>', unsafe_allow_html=True)
@@ -224,10 +286,19 @@ def main():
                     st.balloons()
                     st.subheader("✅ Final Deliverable")
                     st.success(f"Task '{category}' has been completed by {selected_worker['name']}.")
+
+                    # Display expanded metadata including DID and Session Info
+                    with st.expander("View Transaction Metadata", expanded=True):
+                        st.write(f"🛡️ **Agent DID:** {did_id}")
+                        st.write(f"🔑 **Signing Key (Session):** {session['address']}")
+                        st.write(f"📝 **Attestation ID:** {attestation['Attestation ID']}")
+                        st.write(f"📑 **Kite Governance Policy:** {policy_msg}")
+
                     st.json({
                         "AttestationID": attestation["Attestation ID"],
                         "Worker": selected_worker['name'],
-                        "Deliverable": f"Simulation of {category} results for: {details[:30]}..."
+                        "Deliverable": f"Simulation of {category} results for: {details[:30]}...",
+                        "EscrowStatus": "Released"
                     })
                 else:
                     st.error(f"Transaction failed: {result}")
