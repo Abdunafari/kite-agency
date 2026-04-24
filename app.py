@@ -18,73 +18,103 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS FOR EYE-FRIENDLY LIGHT THEME ---
-st.markdown("""
-    <style>
-    /* Main background - Soft light grey for reduced eye strain */
-    .stApp {
-        background-color: #f8f9fa;
-        color: #212529;
-    }
-
-    /* Sidebar styling - Slightly darker neutral for clear separation */
-    section[data-testid="stSidebar"] {
-        background-color: #e9ecef !important;
-        border-right: 1px solid #dee2e6;
-    }
-
-    /* Headers - High contrast professional teal/blue */
-    h1, h2, h3 {
-        color: #005f73 !important;
-        font-weight: 700 !important;
-    }
-
-    /* Buttons - Accessible blue with white text */
-    .stButton>button {
-        background: #0a9396;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 0.6rem 1.2rem;
-        font-weight: 600;
-        transition: background 0.2s ease;
-    }
-    .stButton>button:hover {
-        background: #005f73;
-        color: white;
-    }
-
-    /* Input fields - High legibility white background with dark text */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>select, .stNumberInput>div>div>input {
-        background-color: #ffffff !important;
-        color: #212529 !important;
-        border: 1px solid #ced4da !important;
-    }
-
-    /* Status containers - Subtle borders and soft backgrounds */
-    .status-box {
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        background-color: #ffffff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        margin-bottom: 12px;
-        color: #495057;
-    }
-
-    /* Audit Log Table */
-    .stDataFrame {
-        background-color: #ffffff;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-    }
-
-    /* Success/Info messages contrast tweaks */
-    .stAlert {
-        border-radius: 8px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# --- THEME MANAGEMENT ---
+def apply_theme(theme_name):
+    if theme_name == "Day Mode (Sandy Ash)":
+        # Day Mode: Sandy Coarse Dark Ash color palette
+        st.markdown("""
+            <style>
+            .stApp {
+                background-color: #d7d3c8; /* Sandy Coarse Ash */
+                color: #2c3e50;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: #c9c4b9 !important;
+                border-right: 1px solid #b2aea3;
+            }
+            h1, h2, h3 {
+                color: #4a4a4a !important;
+                font-weight: 700 !important;
+            }
+            .stButton>button {
+                background: #5d5c58;
+                color: #f1f1f1;
+                border: none;
+                border-radius: 6px;
+                padding: 0.6rem 1.2rem;
+                font-weight: 600;
+            }
+            .stButton>button:hover {
+                background: #4a4a4a;
+                color: #ffffff;
+            }
+            .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>select, .stNumberInput>div>div>input {
+                background-color: #e3e0d7 !important;
+                color: #2c3e50 !important;
+                border: 1px solid #b2aea3 !important;
+            }
+            .status-box {
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #b2aea3;
+                background-color: #e3e0d7;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                margin-bottom: 12px;
+                color: #2c3e50;
+            }
+            .stDataFrame {
+                background-color: #e3e0d7;
+                border: 1px solid #b2aea3;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+    else:
+        # Dark Mode: Galaxy Aesthetic
+        st.markdown("""
+            <style>
+            .stApp {
+                background: radial-gradient(circle at top right, #0a0e29, #02040f);
+                color: #e0e0e0;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: rgba(10, 14, 41, 0.9) !important;
+                border-right: 1px solid #1f2a4d;
+            }
+            h1, h2, h3 {
+                color: #00d4ff !important;
+                text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            }
+            .stButton>button {
+                background: linear-gradient(90deg, #00d4ff, #005f73);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 0.5rem 1rem;
+                font-weight: bold;
+            }
+            .stButton>button:hover {
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+                transform: scale(1.02);
+            }
+            .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>select, .stNumberInput>div>div>input {
+                background-color: #0f172a !important;
+                color: #00d4ff !important;
+                border: 1px solid #1f2a4d !important;
+            }
+            .status-box {
+                padding: 15px;
+                border-radius: 10px;
+                border: 1px solid #1f2a4d;
+                background-color: rgba(31, 42, 77, 0.3);
+                margin-bottom: 10px;
+                color: #e0e0e0;
+            }
+            .stDataFrame {
+                background-color: #0f172a;
+                border: 1px solid #1f2a4d;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
 # --- MOCK WORKER REGISTRY ---
 class WorkerAgentRegistry:
@@ -194,11 +224,17 @@ def sign_and_send_usdc(w3, signing_key, to_address, amount):
 def main():
     registry = WorkerAgentRegistry()
 
+    # Sidebar - Theme Toggle
+    st.sidebar.title("🎨 Theme Settings")
+    theme = st.sidebar.radio("View Mode", ["Dark Mode (Galaxy)", "Day Mode (Sandy Ash)"])
+    apply_theme(theme)
+
     st.title("🤖 The AI Talent Agency")
     st.markdown("### Autonomous Agent Orchestration & Payments on Kite AI")
     st.markdown("---")
 
-    # Sidebar
+    # Sidebar - Settings
+    st.sidebar.markdown("---")
     st.sidebar.title("🛠️ Agency Settings")
     rpc_url = st.sidebar.text_input("Kite RPC URL", value="https://testnet-rpc.gokite.ai")
     private_key = st.sidebar.text_input("Agency Private Key", type="password", placeholder="0x...")
