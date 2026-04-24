@@ -1,17 +1,22 @@
 import json
 import os
-from web3 import Web3
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Kite AI Testnet Configuration
-RPC_URL = "https://rpc-testnet.gokite.ai/"
-CHAIN_ID = 2368
+# Kite AI Testnet Configuration (Defaults for Testnet)
+DEFAULT_RPC_URL = "https://rpc-testnet.gokite.ai/"
+DEFAULT_CHAIN_ID = 2368
+DEFAULT_ESCROW_ADDR = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+
+# Fetch from environment or use defaults
+RPC_URL = os.getenv("KITE_RPC_URL", DEFAULT_RPC_URL)
+CHAIN_ID = int(os.getenv("KITE_CHAIN_ID", DEFAULT_CHAIN_ID))
+ESCROW_CONTRACT_ADDRESS = os.getenv("ESCROW_CONTRACT_ADDRESS", DEFAULT_ESCROW_ADDR)
 
 def get_contract_abi():
-    # This is a simplified ABI for the AIAgencyEscrow contract
+    """Returns the ABI for the AIAgencyEscrow contract."""
     return [
 	{
 		"inputs": [],
@@ -257,8 +262,3 @@ def get_contract_abi():
 		"type": "receive"
 	}
 ]
-
-# Note: In a real production scenario, the contract would be deployed to a specific address.
-# For this dApp demo, we will use a mock address or a pre-deployed one if available.
-# Since we are in a sandbox, we'll provide the logic to interact with it.
-ESCROW_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3" # Placeholder
