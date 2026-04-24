@@ -1,5 +1,11 @@
+##  feat/ai-talent-agency-kite-ai-18409574559028205297
 streamlit==1.56.0
 web3==7.15.0
 python-dotenv==1.2.2
 pandas==3.0.2
 eth-account==0.13.7
+streamlit
+web3
+python-dotenv
+pandas
+main
